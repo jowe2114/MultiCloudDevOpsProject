@@ -3,79 +3,81 @@ pipeline {
     agent any
     
     environment {
-    dockerHubCredentialsID	    = 'DockerHub'  		    			// DockerHub credentials ID.
-    imageName   		        = 'jowe2114/java-app'     			        // DockerHub repo/image name.
-	openshiftCredentialsID	    = 'openshift'	    				// KubeConfig credentials ID.   
-	nameSpace                   = 'omaryousef'
-	clusterUrl                  = 'https://api.ocp-training.ivolve-test.com:6443'
-	gitRepoName 	            = 'MultiCloudDevOpsProject'
-    gitUserName 	            = 'jowe2114'
-	gitUserEmail                = 'omaryoussef19999@gmail.com'
-	githubToken                 = 'github-token'
-	sonarqubeUrl                = 'http://192.168.100.103:9000/'
-	sonarTokenCredentialsID     = 'sonar-token'
-	k8sCredentialsID	        = 'Kubernetes'
+        dockerHubCredentialsID    = 'DockerHub'            // DockerHub credentials ID.
+        imageName                 = 'jowe2114/java-app'    // DockerHub repo/image name.
+        openshiftCredentialsID    = 'openshift'            // OpenShift credentials ID.
+        nameSpace                 = 'omaryousef'
+        clusterUrl                = 'https://api.ocp-training.ivolve-test.com:6443'
+        gitRepoName               = 'MultiCloudDevOpsProject'
+        gitUserName               = 'jowe2114'
+        gitUserEmail              = 'omaryoussef19999@gmail.com'
+        githubToken               = 'github-token'
+        sonarqubeUrl              = 'http://192.168.100.103:9000/'
+        sonarTokenCredentialsID   = 'sonar-token'
+        k8sCredentialsID          = 'Kubernetes'
     }
     
-    stages {       
-
+    stages {
         stage('Run Unit Test') {
             steps {
                 script {
-                    dir('Application') {	
-                	         runUnitTests()
+                    dir('Application') {    
+                        runUnitTests()
                     }
-        	}
-    	    }
-	}
-	stage('Build') {
-            steps {
-                script {
-                	dir('Application') {
-                	         build()	
-                    }
-        	}
+                }
             }
         }
-	stage('SonarQube Analysis') {
+
+        stage('Build') {
             steps {
                 script {
                     dir('Application') {
-                                sonarQubeAnalysis()	
-                        }
+                        build()    
+                    }
+                }
             }
         }
-    }
 
-    stage('Build and Push Docker Image') {
-        steps {
-            script {
-                dir('Application') {
-                        buildandPushDockerImage("${dockerHubCredentialsID}", "${imageName}")
-                }	
-            }
-        }
-    }
-    stage('Edit new image in deployment.yaml file') {
+        stage('SonarQube Analysis') {
             steps {
-                script { 
-                    
-                    editNewImage("${githubToken}", "${imageName}", "${gitUserEmail}", "${gitUserName}", "${gitRepoName}")
-                
+                script {
+                    withSonarQubeEnv('SonarQube') {    // Ensure SonarQube is configured in Jenkins global settings
+                        dir('Application') {
+                            // Assuming sonarQubeAnalysis() is defined in your shared library
+                            sonarQubeAnalysis()
+                        }
+                    }
                 }
             }
         }
 
-    stage('Deploy on OpenShift Cluster') {
-        steps {
-            script { 
-                dir('oc') {
-                            
-                    deployOnOc("${openshiftCredentialsID}", "${nameSpace}", "${clusterUrl}")
+        stage('Build and Push Docker Image') {
+            steps {
+                script {
+                    dir('Application') {
+                        buildandPushDockerImage("${dockerHubCredentialsID}", "${imageName}")
+                    }    
                 }
             }
         }
-    }
+
+        stage('Edit new image in deployment.yaml file') {
+            steps {
+                script {
+                    editNewImage("${githubToken}", "${imageName}", "${gitUserEmail}", "${gitUserName}", "${gitRepoName}")
+                }
+            }
+        }
+
+        stage('Deploy on OpenShift Cluster') {
+            steps {
+                script {
+                    dir('oc') {
+                        deployOnOc("${openshiftCredentialsID}", "${nameSpace}", "${clusterUrl}")
+                    }
+                }
+            }
+        }
     }
 
     post {
