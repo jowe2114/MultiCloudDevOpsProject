@@ -3,9 +3,9 @@ pipeline {
     agent any
 
     environment {
-        dockerHubCredentialsID    = 'DockerHub'            // DockerHub credentials ID.
-        imageName                 = 'jowe2114/java-app'    // DockerHub repo/image name.
-        openshiftCredentialsID    = 'openshift'            // OpenShift credentials ID.
+        dockerHubCredentialsID    = 'DockerHub'
+        imageName                 = 'jowe2114/java-app'
+        openshiftCredentialsID    = 'openshift'
         nameSpace                 = 'omaryousef'
         clusterUrl                = 'https://api.ocp-training.ivolve-test.com:6443'
         gitRepoName               = 'MultiCloudDevOpsProject'
@@ -41,15 +41,17 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    withSonarQubeEnv('SonarQube') {  // Ensure SonarQube is configured in Jenkins global settings
+                    withSonarQubeEnv('SonarQube') {
                         dir('Application') {
-                            sh """
-                                sonar-scanner \
-                                -Dsonar.projectKey=your_project_key \
-                                -Dsonar.sources=. \
-                                -Dsonar.host.url=${sonarqubeUrl} \
-                                -Dsonar.login=${sonarTokenCredentialsID}
-                            """
+                            withCredentials([string(credentialsId: sonarTokenCredentialsID, variable: 'SONAR_TOKEN')]) {
+                                sh """
+                                    sonar-scanner \
+                                    -Dsonar.projectKey=your_project_key \
+                                    -Dsonar.sources=. \
+                                    -Dsonar.host.url=${sonarqubeUrl} \
+                                    -Dsonar.login=$SONAR_TOKEN
+                                """
+                            }
                         }
                     }
                 }
