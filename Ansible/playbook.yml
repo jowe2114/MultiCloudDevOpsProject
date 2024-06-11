@@ -1,0 +1,8 @@
+---
+- name: Install Docker, jenkins and sonarqube
+  hosts: all
+  roles:
+    - docker
+    - jenkins
+    - sonarqube
+    - oc_cli
