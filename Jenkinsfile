@@ -1,7 +1,7 @@
 @Library('Jowe-shared-library')_
 pipeline {
     agent any
-    
+
     environment {
         dockerHubCredentialsID    = 'DockerHub'            // DockerHub credentials ID.
         imageName                 = 'jowe2114/java-app'    // DockerHub repo/image name.
@@ -16,12 +16,12 @@ pipeline {
         sonarTokenCredentialsID   = 'sonar-token'
         k8sCredentialsID          = 'Kubernetes'
     }
-    
+
     stages {
         stage('Run Unit Test') {
             steps {
                 script {
-                    dir('Application') {    
+                    dir('Application') {
                         runUnitTests()
                     }
                 }
@@ -32,47 +32,45 @@ pipeline {
             steps {
                 script {
                     dir('Application') {
-                        build()    
+                        build()
                     }
                 }
             }
         }
 
-      stage('SonarQube Analysis') {
-    steps {
-        script {
-            withSonarQubeEnv('SonarQube') {
-                dir('Application') {
-                    sh """
-                        sonar-scanner \
-                        -Dsonar.projectKey=your_project_key \
-                        -Dsonar.sources=. \
-                        -Dsonar.host.url=${sonarqubeUrl} \
-                        -Dsonar.login=${sonarTokenCredentialsID}
-                    """
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    withSonarQubeEnv('SonarQube') {  // Ensure SonarQube is configured in Jenkins global settings
+                        dir('Application') {
+                            sh """
+                                sonar-scanner \
+                                -Dsonar.projectKey=your_project_key \
+                                -Dsonar.sources=. \
+                                -Dsonar.host.url=${sonarqubeUrl} \
+                                -Dsonar.login=${sonarTokenCredentialsID}
+                            """
+                        }
+                    }
                 }
             }
         }
-    }
-}
 
-
-       stage('Build and Push Docker Image') {
-    steps {
-        script {
-            withCredentials([usernamePassword(credentialsId: dockerHubCredentialsID, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                dir('Application') {
-                    sh """
-                        docker build -t ${imageName} .
-                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                        docker push ${imageName}
-                    """
+        stage('Build and Push Docker Image') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: dockerHubCredentialsID, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        dir('Application') {
+                            sh """
+                                docker build -t ${imageName} .
+                                echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                                docker push ${imageName}
+                            """
+                        }
+                    }
                 }
             }
         }
-    }
-}
-
 
         stage('Edit new image in deployment.yaml file') {
             steps {
@@ -99,6 +97,7 @@ pipeline {
         }
         failure {
             echo "${JOB_NAME}-${BUILD_NUMBER} pipeline failed"
+            // Optionally, add more debug information or notifications
         }
     }
 }
