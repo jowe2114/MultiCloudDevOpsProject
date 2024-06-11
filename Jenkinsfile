@@ -1,4 +1,4 @@
-@Library('Jowe-Shared-Library')_
+@Library('Jowe-shared-library')_
 pipeline {
     agent any
     
