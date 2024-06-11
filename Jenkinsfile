@@ -17,80 +17,65 @@ pipeline {
         k8sCredentialsID          = 'Kubernetes'
     }
 
-    stages {
+    stages {       
+
         stage('Run Unit Test') {
             steps {
                 script {
-                    dir('Application') {
-                        runUnitTests()
+                    dir('Application') {	
+                	         runUnitTests()
                     }
-                }
+        	}
+    	    }
+	}
+	stage('Build') {
+            steps {
+                script {
+                	dir('Application') {
+                	         build()	
+                    }
+        	}
             }
         }
-
-        stage('Build') {
+	stage('SonarQube Analysis') {
             steps {
                 script {
                     dir('Application') {
-                        build()
-                    }
-                }
-            }
-        }
-
-        stage('SonarQube Analysis') {
-            steps {
-                script {
-                    withSonarQubeEnv('SonarQube') {
-                        dir('Application') {
-                            withCredentials([string(credentialsId: sonarTokenCredentialsID, variable: 'SONAR_TOKEN')]) {
-                                sh """
-                                    sonar-scanner \
-                                    -Dsonar.projectKey=your_project_key \
-                                    -Dsonar.sources=. \
-                                    -Dsonar.host.url=${sonarqubeUrl} \
-                                    -Dsonar.login=$SONAR_TOKEN
-                                """
-                            }
+                                sonarQubeAnalysis()	
                         }
-                    }
-                }
             }
         }
+    }
 
-        stage('Build and Push Docker Image') {
-            steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: dockerHubCredentialsID, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        dir('Application') {
-                            sh """
-                                docker build -t ${imageName} .
-                                echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                                docker push ${imageName}
-                            """
-                        }
-                    }
-                }
+    stage('Build and Push Docker Image') {
+        steps {
+            script {
+                dir('Application') {
+                        buildandPushDockerImage("${dockerHubCredentialsID}", "${imageName}")
+                }	
             }
         }
-
-        stage('Edit new image in deployment.yaml file') {
+    }
+    stage('Edit new image in deployment.yaml file') {
             steps {
-                script {
+                script { 
+                    
                     editNewImage("${githubToken}", "${imageName}", "${gitUserEmail}", "${gitUserName}", "${gitRepoName}")
+                
                 }
             }
         }
 
-        stage('Deploy on OpenShift Cluster') {
-            steps {
-                script {
-                    dir('oc') {
-                        deployOnOc("${openshiftCredentialsID}", "${nameSpace}", "${clusterUrl}")
-                    }
+    stage('Deploy on OpenShift Cluster') {
+        steps {
+            script { 
+                dir('oc') {
+                            
+                    deployOnOc("${openshiftCredentialsID}", "${nameSpace}", "${clusterUrl}")
                 }
             }
         }
+    }
     }
 
     post {
@@ -99,7 +84,6 @@ pipeline {
         }
         failure {
             echo "${JOB_NAME}-${BUILD_NUMBER} pipeline failed"
-            // Optionally, add more debug information or notifications
         }
     }
 }
