@@ -38,28 +38,41 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                script {
-                    withSonarQubeEnv('SonarQube') {    // Ensure SonarQube is configured in Jenkins global settings
-                        dir('Application') {
-                            // Assuming sonarQubeAnalysis() is defined in your shared library
-                            sonarQubeAnalysis()
-                        }
-                    }
+      stage('SonarQube Analysis') {
+    steps {
+        script {
+            withSonarQubeEnv('SonarQube') {
+                dir('Application') {
+                    sh """
+                        sonar-scanner \
+                        -Dsonar.projectKey=your_project_key \
+                        -Dsonar.sources=. \
+                        -Dsonar.host.url=${sonarqubeUrl} \
+                        -Dsonar.login=${sonarTokenCredentialsID}
+                    """
                 }
             }
         }
+    }
+}
 
-        stage('Build and Push Docker Image') {
-            steps {
-                script {
-                    dir('Application') {
-                        buildandPushDockerImage("${dockerHubCredentialsID}", "${imageName}")
-                    }    
+
+       stage('Build and Push Docker Image') {
+    steps {
+        script {
+            withCredentials([usernamePassword(credentialsId: dockerHubCredentialsID, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                dir('Application') {
+                    sh """
+                        docker build -t ${imageName} .
+                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                        docker push ${imageName}
+                    """
                 }
             }
         }
+    }
+}
+
 
         stage('Edit new image in deployment.yaml file') {
             steps {
