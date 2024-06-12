@@ -22,60 +22,68 @@ pipeline {
         stage('Run Unit Test') {
             steps {
                 script {
-                    dir('Application') {	
-                	         runUnitTests()
+                    dir('Application') {    
+                        runUnitTests()
                     }
-        	}
-    	    }
-	}
-	stage('Build') {
-            steps {
-                script {
-                	dir('Application') {
-                	         build()	
-                    }
-        	}
+                }
             }
         }
-	stage('SonarQube Analysis') {
+
+        stage('Build') {
             steps {
                 script {
                     dir('Application') {
-                                sonarQubeAnalysis()	
-                        }
+                        build()    
+                    }
+                }
             }
         }
-    }
 
-    stage('Build and Push Docker Image') {
-        steps {
-            script {
-                dir('Application') {
-                        buildandPushDockerImage("${dockerHubCredentialsID}", "${imageName}")
-                }	
-            }
-        }
-    }
-    stage('Edit new image in deployment.yaml file') {
+        stage('SonarQube Analysis') {
             steps {
-                script { 
-                    
-                    editNewImage("${githubToken}", "${imageName}", "${gitUserEmail}", "${gitUserName}", "${gitRepoName}")
-                
+                script {
+                    dir('Application') {
+                        sonarQubeAnalysis()    
+                    }
                 }
             }
         }
 
-    stage('Deploy on OpenShift Cluster') {
-        steps {
-            script { 
-                dir('oc') {
-                            
-                    deployOnOc("${openshiftCredentialsID}", "${nameSpace}", "${clusterUrl}")
+        stage('Build and Push Docker Image') {
+            steps {
+                script {
+                    dir('Application') {
+                        buildandPushDockerImage("${dockerHubCredentialsID}", "${imageName}")
+                    }    
                 }
             }
         }
-    }
+
+        stage('Edit new image in deployment.yaml file') {
+            steps {
+                script {
+                    withCredentials([string(credentialsId: githubToken, variable: 'GITHUB_TOKEN')]) {
+                        editNewImage(
+                            "${env.GITHUB_TOKEN}",
+                            "${imageName}",
+                            "${gitUserEmail}",
+                            "${gitUserName}",
+                            "${gitRepoName}"
+                        )
+                    }
+                }
+            }
+        }
+
+        stage('Deploy on OpenShift Cluster') {
+            steps {
+                script {
+                    dir('oc') {
+                        deployOnOc("${openshiftCredentialsID}", "${nameSpace}", "${clusterUrl}")
+                    }
+                }
+            }
+        }
     }
 
     post {
