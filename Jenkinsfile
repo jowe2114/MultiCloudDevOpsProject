@@ -58,10 +58,16 @@ pipeline {
     }
     stage('Edit new image in deployment.yaml file') {
             steps {
-                script { 
-                    
-                    editNewImage("${githubToken}", "${imageName}", "${gitUserEmail}", "${gitUserName}", "${gitRepoName}")
-                
+                script {
+                    withCredentials([string(credentialsId: githubToken, variable: 'GITHUB_TOKEN')]) {
+                        editNewImage(
+                            "${env.GITHUB_TOKEN}",
+                            "${imageName}",
+                            "${gitUserEmail}",
+                            "${gitUserName}",
+                            "${gitRepoName}"
+                        )
+                    }
                 }
             }
         }
