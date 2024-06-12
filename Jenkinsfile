@@ -22,68 +22,60 @@ pipeline {
         stage('Run Unit Test') {
             steps {
                 script {
-                    dir('Application') {    
-                        runUnitTests()
+                    dir('Application') {	
+                	         runUnitTests()
                     }
-                }
+        	}
+    	    }
+	}
+	stage('Build') {
+            steps {
+                script {
+                	dir('Application') {
+                	         build()	
+                    }
+        	}
             }
         }
-
-        stage('Build') {
+	stage('SonarQube Analysis') {
             steps {
                 script {
                     dir('Application') {
-                        build()    
-                    }
-                }
+                                sonarQubeAnalysis()	
+                        }
             }
         }
+    }
 
-        stage('SonarQube Analysis') {
-            steps {
-                script {
-                    dir('Application') {
-                        sonarQubeAnalysis()    
-                    }
-                }
-            }
-        }
-
-        stage('Build and Push Docker Image') {
-            steps {
-                script {
-                    dir('Application') {
+    stage('Build and Push Docker Image') {
+        steps {
+            script {
+                dir('Application') {
                         buildandPushDockerImage("${dockerHubCredentialsID}", "${imageName}")
-                    }    
+                }	
+            }
+        }
+    }
+    stage('Edit new image in deployment.yaml file') {
+            steps {
+                script { 
+                    
+                    editNewImage("${githubToken}", "${imageName}", "${gitUserEmail}", "${gitUserName}", "${gitRepoName}")
+                
                 }
             }
         }
 
-        stage('Edit new image in deployment.yaml file') {
-            steps {
-                script {
-                    withCredentials([string(credentialsId: githubToken, variable: 'GITHUB_TOKEN')]) {
-                        editNewImage(
-                            "${env.GITHUB_TOKEN}",
-                            "${imageName}",
-                            "${gitUserEmail}",
-                            "${gitUserName}",
-                            "${gitRepoName}"
-                        )
-                    }
+    stage('Deploy on OpenShift Cluster') {
+        steps {
+            script { 
+                dir('oc') {
+                            
+                    deployOnOc("${openshiftCredentialsID}", "${nameSpace}", "${clusterUrl}")
                 }
             }
         }
-
-        stage('Deploy on OpenShift Cluster') {
-            steps {
-                script {
-                    dir('oc') {
-                        deployOnOc("${openshiftCredentialsID}", "${nameSpace}", "${clusterUrl}")
-                    }
-                }
-            }
-        }
+    }
     }
 
     post {
