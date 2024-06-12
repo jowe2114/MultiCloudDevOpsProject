@@ -15,4 +15,3 @@ def call(String githubToken, String imageName, String gitUserEmail, String gitUs
 
   }
 }
-
