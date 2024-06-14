@@ -49,7 +49,6 @@ pipeline {
             sh 'git config user.name jowe2114'
 
             // Perform deployment using custom script or function
-            // Ensure to pass necessary parameters to deployOnOc function/script
             dir('oc') {
                 // Assuming deployOnOc is a custom script/function to handle OpenShift deployment
                 deployOnOc("${openshiftCredentialsID}", "${nameSpace}", "${clusterUrl}")
