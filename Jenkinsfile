@@ -39,7 +39,6 @@ pipeline {
         }
     }
 
-    stages {
         stage('Build and Push Docker Image') {
             steps {
                 script {
@@ -57,7 +56,6 @@ pipeline {
                     }
                 }
             }
-        }
 
     stage('Edit new image in deployment.yaml file') {
             steps {
