@@ -66,8 +66,8 @@ pipeline {
             sh 'git config user.email omaryoussef19999@gmail.com'
             sh 'git config user.name jowe2114'
 
-            // Update deployment image version
-            sh 'sed -i s|image:.*|image: jowe2114/java-app:19|g oc/deployment.yml'
+            // Update deployment image version using sed command
+            sh "sed -i 's|image:.*|image: ${imageName}:19|g' oc/deployment.yml"
 
             // Git operations
             sh 'git add oc/deployment.yml'
@@ -80,6 +80,7 @@ pipeline {
         }
     }
 }
+
 
 
     stage('Deploy on OpenShift Cluster') {
