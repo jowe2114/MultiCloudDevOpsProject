@@ -17,8 +17,7 @@ pipeline {
         k8sCredentialsID          = 'Kubernetes'
         yamlfiles                 = 'oc/deployment.yml'
         REGISTRY                  = 'docker.io'
-        SERVICE_NAME              = 'java-app'
-        
+        SERVICE_NAME              = 'spring-boot-app'
     }
 
     stages {       
@@ -55,26 +54,43 @@ pipeline {
             }
         }
 
-     
+        stage('Edit new image in deployment.yaml file') {
+            steps {
+                script {
+                    echo 'Setting Git configurations...'
+                    sh 'git config user.email "omaryoussef19999@gmail.com"'
+                    sh 'git config user.name "jowe2114"'
+                    
+                    echo 'Updating deployment image version...'
+                    sh "sed -i 's|image:.*|image: ${imageName}:19|g' ${yamlfiles}"
+                    
+                    echo 'Adding modified deployment.yml to Git...'
+                    sh 'git add oc/deployment.yml'
+                    
+                    echo 'Committing changes...'
+                    sh 'git commit -m "Update deployment image to version 19"'
+                    
+                    echo 'Pushing changes to GitHub...'
+                    withCredentials([usernamePassword(credentialsId: 'github-token', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                        sh "git push https://$GIT_USERNAME:$GIT_PASSWORD@github.com/${gitUserName}/${gitRepoName} HEAD:dev"
+                    }
+                }
+            }
+        }
+
         stage('Deploy to OpenShift') {
-        steps {script {
-
-                withCredentials([string(credentialsId: 'OPEN_SHIFT_TOKEN_LOGIN', variable: 'OPEN_SHIFT_TOKEN')]) {
-
-                    sh " oc login --token=\${OPEN_SHIFT_TOKEN} --server=${ClusterUrl} --insecure-skip-tls-verify "
-                    sh "oc new-app \${REGISTRY}/${imageName}:${BUILD_NUMBER}"  
-                    sh "oc expose service/${SERVICE_NAME} "
-                    sh "oc get route"
-
-                      }
-
-    
-
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'OPEN_SHIFT_TOKEN_LOGIN', variable: 'OPEN_SHIFT_TOKEN')]) {
+                        sh "oc login --token=\${OPEN_SHIFT_TOKEN} --server=${clusterUrl} --insecure-skip-tls-verify"
+                        sh "oc new-app \${REGISTRY}/${imageName}:19"
+                        sh "oc expose service/${SERVICE_NAME}"
+                        sh "oc get route"
+                    }
                 }
-                }
-           
-}
-
+            }
+        }
+    }
 
     post {
         success {
