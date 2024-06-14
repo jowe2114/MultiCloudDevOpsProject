@@ -1,40 +1,25 @@
-@Library('Jenkins-Shared-Library')_
+@Library('Jowe-shared-library')_
 pipeline {
     agent any
-    
+
     environment {
-    dockerHubCredentialsID	    = 'DockerHub'  		    			// DockerHub credentials ID.
-    imageName   		        = 'alikhames/java-app'     			        // DockerHub repo/image name.
-	openshiftCredentialsID	    = 'openshift'	    				// KubeConfig credentials ID.   
-	nameSpace                   = 'alikhames'
-	clusterUrl                  = 'https://api.ocp-training.ivolve-test.com:6443'
-	gitRepoName 	            = 'MultiCloudDevOpsProject'
-    gitUserName 	            = 'Alikhamed'
-	gitUserEmail                = 'Alikhames566@gmail.com'
-	githubToken                 = 'github-token'
-	sonarqubeUrl                = 'http://3.80.238.182:9000/'
-	sonarTokenCredentialsID     = 'sonar-token'
-	k8sCredentialsID	        = 'kubernetes'
+        dockerHubCredentialsID    = 'DockerHub'
+        imageName                 = 'jowe2114/java-app'
+        openshiftCredentialsID    = 'openshift'
+        nameSpace                 = 'omaryousef'
+        clusterUrl                = 'https://api.ocp-training.ivolve-test.com:6443'
+        gitRepoName               = 'MultiCloudDevOpsProject'
+        gitUserName               = 'jowe2114'
+        gitUserEmail              = 'omaryoussef19999@gmail.com'
+        githubToken               = 'github-token'
+        sonarqubeUrl              = 'http://54.147.42.207:9000/'
+        sonarTokenCredentialsID   = 'sonar-token'
+        k8sCredentialsID          = 'Kubernetes'
     }
-    
+
     stages {       
 
-        stage('Verify Branch') {
-            steps {
-                echo "$GIT_BRANCH"
-            }
-        }
-                stage('List Tasks') {
-                            steps {
-                                 
-                                sh '''
-                                    cd Application
-                                    chmod +x ./gradlew
-                                    ./gradlew tasks
-                                    '''
-                            }
-                        }
-                        
+        
 	stage('Build') {
             steps {
                 script {
