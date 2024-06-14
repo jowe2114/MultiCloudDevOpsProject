@@ -12,23 +12,30 @@ pipeline {
         gitUserName               = 'jowe2114'
         gitUserEmail              = 'omaryoussef19999@gmail.com'
         githubToken               = 'github-token'
-        sonarqubeUrl              = 'http://192.168.100.103:9000/'
+        sonarqubeUrl              = 'http://54.147.42.207:9000/'
         sonarTokenCredentialsID   = 'sonar-token'
         k8sCredentialsID          = 'Kubernetes'
     }
 
-      stages {       
-
-        stage('Run Unit Test') {
+      stages {
+        
+         stage('Verify Branch') {
             steps {
-                script {
-                    dir('Application') {	
-                	         runUnitTests()
-                    }
-        	}
-    	    }
-	}
-	stage('Build') {
+                echo "$GIT_BRANCH"
+            }
+        }
+                stage('List Tasks') {
+                            steps {
+                                 
+                                sh '''
+                                    cd Application
+                                    chmod +x ./gradlew
+                                    ./gradlew tasks
+                                    '''
+                            }
+                        }
+                        
+                stage('Build') {
             steps {
                 script {
                 	dir('Application') {
