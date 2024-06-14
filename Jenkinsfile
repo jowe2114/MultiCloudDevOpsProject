@@ -55,14 +55,21 @@ pipeline {
     }
 
     stage('Build and Push Docker Image') {
-        steps {
-            script {
-                dir('Application') {
-                        buildandPushDockerImage("${dockerHubCredentialsID}", "${imageName}")
-                }	
+    steps {
+        script {
+            // Assuming you have a function or script defined to handle Docker login and image build/push
+            withCredentials([usernamePassword(credentialsId: "${dockerHubCredentialsID}", usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                // Login to Docker Hub
+                sh "echo \$DOCKER_PASSWORD | docker login -u \$DOCKER_USERNAME --password-stdin"
+
+                // Build and push Docker image
+                sh "docker build -t ${imageName} ./Application"
+                sh "docker push ${imageName}"
             }
         }
     }
+}
+
     stage('Edit new image in deployment.yaml file') {
             steps {
                 script { 
