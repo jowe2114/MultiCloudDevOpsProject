@@ -39,25 +39,27 @@ pipeline {
         }
     }
 
-       stage('Build and Push Docker Image') {
+       stage('Edit new image in deployment.yaml file') {
     steps {
         script {
-            // Retrieve Docker Hub credentials (token) securely
-            withCredentials([string(credentialsId: "${dockerHubCredentialsID}", variable: 'DOCKERHUB_TOKEN')]) {
-                // Login to Docker Hub using the token
-                sh "docker login -u jowe2114 -p \$DOCKERHUB_TOKEN"
+            // Set Git configurations
+            sh 'git config user.email omaryoussef19999@gmail.com'
+            sh 'git config user.name jowe2114'
 
-                // Check if docker login was successful
-                sh "docker info"
+            // Update deployment image version using sed command
+            sh "sed -i 's|image:.*|image: ${imageName}:19|g' oc/deployment.yml"
 
-                // Build and push Docker image
-                sh "docker build -t ${imageName} ./Application"
-                sh "docker push ${imageName}"
+            // Git operations
+            sh 'git add oc/deployment.yml'
+            sh 'git commit -m "Update deployment image to version 19"'
+            
+            // Push to GitHub (using credentials)
+            withCredentials([usernamePassword(credentialsId: 'github-token', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                sh "git push https://$GIT_USERNAME:$GIT_PASSWORD@github.com/jowe2114/MultiCloudDevOpsProject HEAD:dev"
             }
         }
     }
 }
-
 
    stage('Edit new image in deployment.yaml file') {
     steps {
