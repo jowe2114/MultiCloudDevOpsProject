@@ -54,7 +54,29 @@ pipeline {
             }
         }
 
-        
+        stage('Edit new image in deployment.yaml file') {
+            steps {
+                script {
+                    echo 'Setting Git configurations...'
+                    sh 'git config user.email "omaryoussef19999@gmail.com"'
+                    sh 'git config user.name "jowe2114"'
+                    
+                    echo 'Updating deployment image version...'
+                    sh "sed -i 's|image:.*|image: ${imageName}:19|g' ${yamlfiles}"
+                    
+                    echo 'Adding modified deployment.yml to Git...'
+                    sh 'git add oc/deployment.yml'
+                    
+                    echo 'Committing changes...'
+                    sh 'git commit -m "Update deployment image to version 19"'
+                    
+                    echo 'Pushing changes to GitHub...'
+                    withCredentials([usernamePassword(credentialsId: 'github-token', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                        sh "git push https://$GIT_USERNAME:$GIT_PASSWORD@github.com/${gitUserName}/${gitRepoName} HEAD:dev"
+                    }
+                }
+            }
+        }
 
         stage('Deploy to OpenShift') {
             steps {
