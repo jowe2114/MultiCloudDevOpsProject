@@ -9,7 +9,8 @@ pipeline {
                         // Example commands or steps
                         sh "echo 'Hello Jenkins'"
                         sh "ls -l"
-                        sh "exit 1"  // Simulate a failure condition
+                        // Remove or comment out exit 1 to prevent intentional failure
+                        // sh "exit 1"
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
                         echo "Failed: ${e.message}"
