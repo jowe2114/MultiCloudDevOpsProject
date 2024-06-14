@@ -1,5 +1,4 @@
 @Library('Jowe-shared-library')_
-
 pipeline {
     agent any
 
@@ -20,42 +19,68 @@ pipeline {
 
     stages {       
 
-        stage('Build') {
+        
+	stage('Build') {
+            steps {
+                script {
+                	dir('Application') {
+                	         build()	
+                    }
+        	}
+            }
+        }
+	stage('SonarQube Analysis') {
             steps {
                 script {
                     dir('Application') {
-                        build()	
-                    }
-                }
+                                sonarQubeAnalysis()	
+                        }
             }
         }
+    }
 
-        stage('SonarQube Analysis') {
-            steps {
-                script {
-                    dir('Application') {
-                        sonarQubeAnalysis()	
-                    }
-                }
-            }
-        }
-
-
-        stage('Deploy on OpenShift Cluster') {
+       stage('Build and Push Docker Image') {
     steps {
-        script { 
-            // Set Git configurations (if needed)
-            sh 'git config user.email omaryoussef19999@gmail.com'
-            sh 'git config user.name jowe2114'
+        script {
+            // Retrieve Docker Hub credentials (token) securely
+            withCredentials([string(credentialsId: "${dockerHubCredentialsID}", variable: 'DOCKERHUB_TOKEN')]) {
+                // Login to Docker Hub using the token
+                sh "docker login -u jowe2114 -p \$DOCKERHUB_TOKEN"
 
-            // Perform deployment using custom script or function
-            dir('oc') {
-                // Assuming deployOnOc is a custom script/function to handle OpenShift deployment
-                deployOnOc("${openshiftCredentialsID}", "${nameSpace}", "${clusterUrl}")
+                // Check if docker login was successful
+                sh "docker info"
+
+                // Build and push Docker image
+                sh "docker build -t ${imageName} ./Application"
+                sh "docker push ${imageName}"
             }
         }
     }
 }
+
+
+   stage('Edit new image in deployment.yaml file') {
+    steps {
+        script {
+            // Set Git configurations
+            sh 'git config user.email omaryoussef19999@gmail.com'
+            sh 'git config user.name jowe2114'
+
+            // Update deployment image version
+            sh 'sed -i s|image:.*|image: jowe2114/java-app:19|g oc/deployment.yml'
+
+            // Git operations
+            sh 'git add oc/deployment.yml'
+            sh 'git commit -m "Update deployment image to version 19"'
+            
+            // Push to GitHub (using credentials)
+            withCredentials([usernamePassword(credentialsId: 'github-token', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                sh "git push https://$GIT_USERNAME:$GIT_PASSWORD@github.com/jowe2114/MultiCloudDevOpsProject HEAD:dev"
+            }
+        }
+    }
+}
+
 
 
 
