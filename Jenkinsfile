@@ -17,7 +17,7 @@ pipeline {
         k8sCredentialsID          = 'Kubernetes'
     }
 
-    stages {
+    stages {       
         stage('Build') {
             steps {
                 script {
@@ -44,7 +44,7 @@ pipeline {
                     // Retrieve Docker Hub credentials (token) securely
                     withCredentials([string(credentialsId: "${dockerHubCredentialsID}", variable: 'DOCKERHUB_TOKEN')]) {
                         // Login to Docker Hub using the token
-                        sh "docker login -u jowe2114 -p \$DOCKERHUB_TOKEN"
+                        sh "echo \$DOCKERHUB_TOKEN | docker login -u jowe2114 --password-stdin"
 
                         // Check if docker login was successful
                         sh "docker info"
@@ -61,8 +61,8 @@ pipeline {
             steps {
                 script {
                     // Set Git configurations
-                    sh 'git config user.email omaryoussef19999@gmail.com'
-                    sh 'git config user.name jowe2114'
+                    sh 'git config user.email "omaryoussef19999@gmail.com"'
+                    sh 'git config user.name "jowe2114"'
 
                     // Update deployment image version
                     sh "sed -i 's|image:.*|image: ${imageName}:19|g' oc/deployment.yml"
