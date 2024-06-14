@@ -41,15 +41,9 @@ pipeline {
         stage('Build and Push Docker Image') {
             steps {
                 script {
-                    // Retrieve Docker Hub credentials (token) securely
                     withCredentials([string(credentialsId: "${dockerHubCredentialsID}", variable: 'DOCKERHUB_TOKEN')]) {
-                        // Login to Docker Hub using the token
                         sh "echo \$DOCKERHUB_TOKEN | docker login -u jowe2114 --password-stdin"
-
-                        // Check if docker login was successful
                         sh "docker info"
-
-                        // Build and push Docker image
                         sh "docker build -t ${imageName} ./Application"
                         sh "docker push ${imageName}"
                     }
@@ -60,18 +54,20 @@ pipeline {
         stage('Edit new image in deployment.yaml file') {
             steps {
                 script {
-                    // Set Git configurations
+                    echo 'Setting Git configurations...'
                     sh 'git config user.email "omaryoussef19999@gmail.com"'
                     sh 'git config user.name "jowe2114"'
-
-                    // Update deployment image version
+                    
+                    echo 'Updating deployment image version...'
                     sh "sed -i 's|image:.*|image: ${imageName}:19|g' oc/deployment.yml"
-
-                    // Git operations
+                    
+                    echo 'Adding modified deployment.yml to Git...'
                     sh 'git add oc/deployment.yml'
+                    
+                    echo 'Committing changes...'
                     sh 'git commit -m "Update deployment image to version 19"'
-
-                    // Push to GitHub (using credentials)
+                    
+                    echo 'Pushing changes to GitHub...'
                     withCredentials([usernamePassword(credentialsId: 'github-token', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
                         sh "git push https://$GIT_USERNAME:$GIT_PASSWORD@github.com/${gitUserName}/${gitRepoName} HEAD:dev"
                     }
@@ -83,7 +79,6 @@ pipeline {
             steps {
                 script {
                     dir('oc') {
-                        // Assuming deployOnOc is a custom script/function to handle OpenShift deployment
                         deployOnOc("${openshiftCredentialsID}", "${nameSpace}", "${clusterUrl}")
                     }
                 }
