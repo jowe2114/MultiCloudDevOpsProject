@@ -39,15 +39,26 @@ pipeline {
         }
     }
 
-    stage('Build and Push Docker Image') {
-        steps {
-            script {
-                dir('Application') {
-                        buildandPushDockerImage("${dockerHubCredentialsID}", "${imageName}")
-                }	
+    stages {
+        stage('Build and Push Docker Image') {
+            steps {
+                script {
+                    // Retrieve Docker Hub credentials (token) securely
+                    withCredentials([string(credentialsId: "${dockerHubCredentialsID}", variable: 'DOCKERHUB_TOKEN')]) {
+                        // Login to Docker Hub using the token
+                        sh "docker login -u jowe2114 -p \$DOCKERHUB_TOKEN"
+
+                        // Check if docker login was successful
+                        sh "docker info"
+
+                        // Build and push Docker image
+                        sh "docker build -t ${imageName} ./Application"
+                        sh "docker push ${imageName}"
+                    }
+                }
             }
         }
-    }
+
     stage('Edit new image in deployment.yaml file') {
             steps {
                 script { 
