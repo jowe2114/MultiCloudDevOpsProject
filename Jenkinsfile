@@ -51,17 +51,7 @@ pipeline {
             }
         }
 
-       stage('Build & Push Docker Image') {
-            steps {
-                script {
-                    dir('application') {
-                        // Navigate to the directory that contains Dockerfile
-                        buildAndPushDockerImage(dockerHubCredentialsID, imageName, BUILD_NUMBER)
-                    }
-                }
-            }
-        }
-
+     
         stage('Deploy on OpenShift Cluster') {
             steps {
                 script {
