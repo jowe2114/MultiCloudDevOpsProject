@@ -40,24 +40,14 @@ pipeline {
     }
 
     stage('Build and Push Docker Image') {
-    steps {
-        script {
-            // Retrieve Docker Hub credentials securely
-            withCredentials([usernamePassword(credentialsId: "${dockerHubCredentialsID}", usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                // Login to Docker Hub using --password-stdin
-                sh "echo \$DOCKER_PASSWORD | docker login -u \$DOCKER_USERNAME --password-stdin"
-                
-                // Check if docker login was successful
-                sh "docker info"
-                
-                // Build and push Docker image
-                sh "docker build -t ${imageName} ./Application"
-                sh "docker push ${imageName}"
+        steps {
+            script {
+                dir('Application') {
+                        buildandPushDockerImage("${dockerHubCredentialsID}", "${imageName}")
+                }	
             }
         }
     }
-}
-
     stage('Edit new image in deployment.yaml file') {
             steps {
                 script { 
