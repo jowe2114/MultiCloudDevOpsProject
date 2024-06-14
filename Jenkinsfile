@@ -60,14 +60,27 @@ pipeline {
 
 
     stage('Edit new image in deployment.yaml file') {
-            steps {
-                script { 
-                    
-                    editNewImage("${githubToken}", "${imageName}", "${gitUserEmail}", "${gitUserName}", "${gitRepoName}")
-                
-                }
+    steps {
+        script {
+            // Set Git configurations
+            sh 'git config user.email omaryoussef19999@gmail.com'
+            sh 'git config user.name jowe2114'
+
+            // Update deployment image version
+            sh 'sed -i s|image:.*|image: jowe2114/java-app:19|g oc/deployment.yml'
+
+            // Git operations
+            sh 'git add oc/deployment.yml'
+            sh 'git commit -m "Update deployment image to version 19"'
+            
+            // Push to GitHub (using credentials)
+            withCredentials([usernamePassword(credentialsId: 'github-token', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                sh "git push https://$GIT_USERNAME:$GIT_PASSWORD@github.com/jowe2114/MultiCloudDevOpsProject HEAD:dev"
             }
         }
+    }
+}
+
 
     stage('Deploy on OpenShift Cluster') {
         steps {
