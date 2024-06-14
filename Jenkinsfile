@@ -15,6 +15,10 @@ pipeline {
         sonarqubeUrl              = 'http://54.147.42.207:9000/'
         sonarTokenCredentialsID   = 'sonar-token'
         k8sCredentialsID          = 'Kubernetes'
+        yamlfiles                 = 'oc/deployment.yml'
+        REGISTRY                  = 'docker.io'
+        SERVICE_NAME              = 'spring-boot-app'
+        
     }
 
     stages {       
@@ -52,16 +56,25 @@ pipeline {
         }
 
      
-        stage('Deploy on OpenShift Cluster') {
-            steps {
-                script {
-                    dir('oc') {
-                        deployOnOc("${openshiftCredentialsID}", "${nameSpace}", "${clusterUrl}")
-                    }
+        stage('Deploy to OpenShift') {
+        steps {script {
+
+                withCredentials([string(credentialsId: 'OPEN_SHIFT_TOKEN_LOGIN', variable: 'OPEN_SHIFT_TOKEN')]) {
+
+                    sh " oc login --token=\${OPEN_SHIFT_TOKEN} --server=${ClusterUrl} --insecure-skip-tls-verify "
+                    sh "oc new-app \${REGISTRY}/${imageName}:${BUILD_NUMBER}"  
+                    sh "oc expose service/${SERVICE_NAME} "
+                    sh "oc get route"
+
+                      }
+
+    
+
                 }
-            }
-        }
-    }
+                }
+           
+}
+
 
     post {
         success {
