@@ -60,7 +60,7 @@ pipeline {
                 script {
                     withCredentials([string(credentialsId: 'OPEN_SHIFT_TOKEN_LOGIN', variable: 'OPEN_SHIFT_TOKEN')]) {
                         sh "oc login --token=\${OPEN_SHIFT_TOKEN} --server=${clusterUrl} --insecure-skip-tls-verify"
-                        sh "oc new-app \${REGISTRY}/${imageName}:19"
+                        sh "oc new-app \${REGISTRY}/${imageName}"
                         sh "oc expose service/${SERVICE_NAME}"
                         sh "oc get route"
                     }
