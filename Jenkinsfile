@@ -17,7 +17,7 @@ pipeline {
         k8sCredentialsID          = 'Kubernetes'
         yamlfiles                 = 'oc/deployment.yml'
         REGISTRY                  = 'docker.io'
-        SERVICE_NAME              = 'java-app'
+        SERVICE_NAME              = 'spring-boot-app'
     }
 
     stages {       
