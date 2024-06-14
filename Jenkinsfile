@@ -59,7 +59,7 @@ pipeline {
 }
 
 
-    stage('Edit new image in deployment.yaml file') {
+   stage('Edit new image in deployment.yaml file') {
     steps {
         script {
             // Set Git configurations
