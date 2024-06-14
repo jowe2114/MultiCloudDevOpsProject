@@ -16,7 +16,7 @@ spec:
       - name: java-app
         image: jowe2114/java-app
         ports:
-        - containerPort: 8080
+        - containerPort: 8081
 
 
 ---
@@ -29,6 +29,6 @@ spec:
     app: java-app
   ports:
   - protocol: TCP
-    port: 8080
-    targetPort: 8080
+    port: 8081
+    targetPort: 8081
   type: NodePort
