@@ -84,7 +84,6 @@ pipeline {
 }
 
 
-
     stage('Deploy on OpenShift Cluster') {
         steps {
             script { 
