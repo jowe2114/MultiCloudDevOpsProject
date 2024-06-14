@@ -58,6 +58,7 @@ pipeline {
 }
 
 
+
     post {
         success {
             echo "${JOB_NAME}-${BUILD_NUMBER} pipeline succeeded"
