@@ -21,11 +21,23 @@ pipeline {
     }
 
     stages {       
+        stage('Unit Test') {
+            steps {
+                script {
+                    dir('Application') {
+                        // Run the unit tests and collect results
+                        sh 'mvn test'
+                        junit 'target/surefire-reports/*.xml' // Adjust the path as necessary
+                    }
+                }
+            }
+        }
+
         stage('Build') {
             steps {
                 script {
                     dir('Application') {
-                        build()
+                        build() // Custom function from the shared library
                     }
                 }
             }
@@ -35,7 +47,7 @@ pipeline {
             steps {
                 script {
                     dir('Application') {
-                        sonarQubeAnalysis()
+                        sonarQubeAnalysis() // Custom function from the shared library
                     }
                 }
             }
@@ -54,7 +66,6 @@ pipeline {
             }
         }
 
-        
         stage('Deploy to OpenShift') {
             steps {
                 script {
