@@ -1,0 +1,56 @@
+- name: Install Jenkins on Ubuntu
+  hosts: all
+  become: yes
+  
+  tasks:
+    - name: Install required packages
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - openjdk-17-jre  # Jenkins requires Java
+        - git
+        - gnupg
+        - lsb-release
+        - wget
+
+    - name: add jenkins key 
+      apt_key:
+        url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+        state: present 
+
+    - name: add jenkins repo 
+      apt_repository:
+        repo: 'deb https://pkg.jenkins.io/debian-stable binary/'
+        state: present 
+
+    - name: install jenkins
+      apt: 
+        name: jenkins 
+        state: present 
+
+    - name: Add Jenkins user to Docker group
+      user:
+        name: jenkins
+        groups: docker
+        append: yes
+
+    - name: start jenkins service 
+      service: 
+        name: jenkins 
+        state: started 
+
+    - name: Fetch Jenkins password
+      shell: cat /var/lib/jenkins/secrets/initialAdminPassword
+      changed_when: false
+      register: jenkins_initial_password
+
+    - name: print jenkins password
+      debug:
+        var: jenkins_initial_password.stdout
+
+    - name: enable jenkins to start at boot time 
+      service: 
+        name: jenkins 
+        enabled: yes 
+

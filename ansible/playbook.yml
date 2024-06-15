@@ -1,0 +1,10 @@
+---
+- name: Install Docker, Jenkins, SonarQube, and OpenShift CLI
+  hosts: all
+  become: yes
+  roles:
+    - docker
+    - jenkins
+    - sonarqube
+    - oc_cli
+
