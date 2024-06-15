@@ -249,7 +249,7 @@ ansible-playbook -i aws_ec2.yml sonn.yaml --private-key -/dbserver.pem -u ubuntu
 
 
 
- **Execute Playbook**:
+**Execute Playbook**:
 
 Execute the playbook using the following command, specifying your inventory (jenkins-server) in the file install_jenkins.yml , (docker-server) in the file install_docker.yml ,(sonarQube-server) in the file sonarQube.yml 
 
@@ -258,6 +258,7 @@ the command to run playbook for each group server
 ```bash
 ansible-playbook -i inventory playbook.yml
 
+```
 
 #### Edit a new task to show the intial password for jenkins
 
