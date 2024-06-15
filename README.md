@@ -103,7 +103,7 @@ git push origin dev
 
 #### And this the output in github website 
 
-![alt text](Terraform/Screenshots/Screenshot 2024-06-15 at 17.09.01.png)
+![alt text](<Terraform/Screenshots/Screenshot 2024-06-15 at 17.09.01.png>)
 
 ## Infrastructure Provisioning with Terraform
 ### Task: 
@@ -164,7 +164,8 @@ project-root/
 
 ##### S3 and DynamoDB
 
-![alt text](<Terraform/Screenshots/Screenshot 2024-06-13 at 12.55.13.png>) ![text](<Terraform/Screenshots/Screenshot 2024-06-13 at 12.55.40.png>)
+![alt text](<Terraform/Screenshots/Screenshot 2024-06-13 at 12.55.13.png>) 
+![alt text](<Terraform/Screenshots/Screenshot 2024-06-13 at 12.55.40.png>)
 
 
 1. **Navigate to the Terraform Directory**:
