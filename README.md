@@ -411,6 +411,8 @@ After several iterations and troubleshooting, we achieved a successful pipeline 
  oc get routes
  curl java-app-omaryousef.apps.ocp-training.ivolve-test.com 
 ```
+![alt text](<oc/Screenshots/Screenshot 2024-06-14 at 22.06.35.png>)
+![alt text](<oc/Screenshots/Screenshot 2024-06-14 at 22.05.55.png>)
 
 ### Additional Resources
 
