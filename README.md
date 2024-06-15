@@ -224,21 +224,6 @@ The objective of this task is to configure EC2 instances using Ansible playbooks
 
 ### Getting Started:
 
-1. **Navigate to the Ansible Directory**:
-
-```bash
-cd ansible
-```
-![alt text](<screenshots/task3 ansible/files.png>)
-
-2. **Adjust Ansible Configuration (Optional)**:
-- Modify the ansible.cfg file if necessary to configure Ansible behavior. 
-```yml
-[defaults]
-remote_user = ec2-user
-roles_path = /root/ivolve/graduation/ansible/roles
-```
-
 **Check the Graph**
 ```bash
 
